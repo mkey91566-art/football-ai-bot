@@ -1,3 +1,4 @@
+
 import os
 import requests
 import pandas as pd
@@ -21,10 +22,10 @@ def keep_alive():
     t = Thread(target=run_web_server)
     t.start()
 
-API_KEY = os.getenv("API_KEY")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-MONGO_URI = os.getenv("MONGO_URI")
+API_KEY = os.getenv("0985590bb186424780f0c502ccf76323")
+BOT_TOKEN = os.getenv("8659395266:AAFb1NvbMWrM_am3clxqYji_18kggYRkP7s")
+CHAT_ID = os.getenv("931005402")
+MONGO_URI = os.getenv("mongodb+srv://Mkey:mkey123@cluster0.hqou8j6.mongodb.net/?appName=Cluster0")
 
 client = MongoClient(MONGO_URI)
 db = client['football_data']
