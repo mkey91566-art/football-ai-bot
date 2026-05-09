@@ -1,30 +1,24 @@
-import os
-import requests
-import pandas as pd
-import time
+import os, requests, time, pytz
 from datetime import datetime
-import pytz
 from pymongo import MongoClient
 from flask import Flask
 from threading import Thread
 
 app = Flask('')
-
 @app.route('/')
-def home():
-    return "Bot is Alive!"
+def home(): return "Bot is Alive!"
 
 def run_web_server():
     app.run(host='0.0.0.0', port=8080)
 
 def keep_alive():
-    t = Thread(target=run_web_server)
-    t.start()
+    Thread(target=run_web_server).start()
 
-API_KEY = os.getenv("0985590bb186424780f0c502ccf76323")
-BOT_TOKEN = os.getenv("8659395266:AAFb1NvbMWrM_am3clxqYji_18kggYRkP7s")
-CHAT_ID = os.getenv("6641734074")
-MONGO_URI = os.getenv("mongodb+srv://Mkey:mkey123@cluster0.hqou8j6.mongodb.net/?appName=Cluster0")
+# Environment Variables မှ Key များကို ဖတ်ခြင်း
+API_KEY = os.getenv("API_KEY")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+MONGO_URI = os.getenv("MONGO_URI")
 
 client = MongoClient(MONGO_URI)
 db = client['football_data']
@@ -34,85 +28,23 @@ def get_predictions():
     url = "https://v3.football.api-sports.io/fixtures?live=all"
     headers = {'x-apisports-key': API_KEY}
     try:
-        response = requests.get(url, headers=headers)
-        data = response.json()
+        data = requests.get(url, headers=headers).json()
         for match in data.get('response', []):
             fixture_id = match['fixture']['id']
-            if history_col.find_one({"fixture_id": fixture_id}):
-                continue
-            home = match['teams']['home']['name']
-            away = match['teams']['away']['name']
-            h_score = match['goals']['home']
-            a_score = match['goals']['away']
-            msg = f"⚽ **Match Alert**\n{home} ({h_score}) vs {away} ({a_score})\n💡 AI Tip: Check Live Stats!"
-            send_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"}
-            requests.post(send_url, data=payload)
+            if history_col.find_one({"fixture_id": fixture_id}): continue
+            
+            home, away = match['teams']['home']['name'], match['teams']['away']['name']
+            h_score, a_score = match['goals']['home'], match['goals']['away']
+            
+            msg = f"⚽ **Match Alert**\n{home} ({h_score}) vs {away} ({a_score})\n💡 AI Tip: Check Stats!"
+            requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", 
+                          data={"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"})
+            
             history_col.insert_one({"fixture_id": fixture_id, "sent_at": datetime.now(pytz.timezone('Asia/Yangon'))})
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception as e: print(f"Error: {e}")
 
 if __name__ == "__main__":
-    keep_alive() 
-    while True:
-        get_predictions()
-        time.sleep(600)
-import os
-import requests
-import pandas as pd
-import time
-from datetime import datetime
-import pytz
-from pymongo import MongoClient
-from flask import Flask
-from threading import Thread
-
-app = Flask('')
-
-@app.route('/')
-def home():
-    return "Bot is Alive!"
-
-def run_web_server():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    t = Thread(target=run_web_server)
-    t.start()
-
-API_KEY = os.getenv("0985590bb186424780f0c502ccf76323")
-BOT_TOKEN = os.getenv("8659395266:AAFb1NvbMWrM_am3clxqYji_18kggYRkP7s")
-CHAT_ID = os.getenv("664173407")
-MONGO_URI = os.getenv("mongodb+srv://Mkey:mkey123@cluster0.hqou8j6.mongodb.net/?appName=Cluster0")
-
-client = MongoClient(MONGO_URI)
-db = client['football_data']
-history_col = db['predictions']
-
-def get_predictions():
-    url = "https://v3.football.api-sports.io/fixtures?live=all"
-    headers = {'x-apisports-key': API_KEY}
-    try:
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        for match in data.get('response', []):
-            fixture_id = match['fixture']['id']
-            if history_col.find_one({"fixture_id": fixture_id}):
-                continue
-            home = match['teams']['home']['name']
-            away = match['teams']['away']['name']
-            h_score = match['goals']['home']
-            a_score = match['goals']['away']
-            msg = f"⚽ **Match Alert**\n{home} ({h_score}) vs {away} ({a_score})\n💡 AI Tip: Check Live Stats!"
-            send_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-            payload = {"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"}
-            requests.post(send_url, data=payload)
-            history_col.insert_one({"fixture_id": fixture_id, "sent_at": datetime.now(pytz.timezone('Asia/Yangon'))})
-    except Exception as e:
-        print(f"Error: {e}")
-
-if __name__ == "__main__":
-    keep_alive() 
+    keep_alive()
     while True:
         get_predictions()
         time.sleep(600)
