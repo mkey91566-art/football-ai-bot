@@ -1,7 +1,5 @@
-python-telegram-bot
-pymongo
 requests
 pandas
-scikit-learn
+pymongo
 pytz
-nest_asyncio
+flask
