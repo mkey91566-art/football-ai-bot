@@ -1,5 +1,6 @@
-requests
-pandas
-pymongo
-pytz
 flask
+requests
+pymongo
+dnspython
+pytz
+gunicorn
